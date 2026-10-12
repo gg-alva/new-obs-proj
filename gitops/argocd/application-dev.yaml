@@ -8,7 +8,7 @@ metadata:
 spec:
   project: otel-demo
   source:
-    repoURL: https://github.com/REPLACE_WITH_OWNER/REPLACE_WITH_REPOSITORY.git
+    repoURL: https://github.com/gg-alva/new-obs-proj.git
     targetRevision: main
     path: helm/otel-flask-app
     helm:

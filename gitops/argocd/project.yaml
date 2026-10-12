@@ -6,7 +6,7 @@ metadata:
 spec:
   description: Flask OpenTelemetry demo workloads
   sourceRepos:
-    - https://github.com/REPLACE_WITH_OWNER/REPLACE_WITH_REPOSITORY.git
+    - https://github.com/gg-alva/new-obs-proj.git
   destinations:
     - namespace: otel-demo-dev
       server: https://kubernetes.default.svc

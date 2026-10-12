@@ -10,7 +10,7 @@ collector:
   dynatrace:
     enabled: true
     # Replace with your Dynatrace environment OTLP ingest endpoint.
-    otlpEndpoint: "https://REPLACE_ME.live.dynatrace.com/api/v2/otlp"
+    otlpEndpoint: "https://fwe60734.live.dynatrace.com/api/v2/otlp"
     secretName: dynatrace-otel
     tokenKey: api-token
 

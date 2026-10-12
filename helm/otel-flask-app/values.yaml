@@ -1,7 +1,7 @@
 replicaCount: 2
 
 image:
-  repository: REPLACE_ME/otel-flask-app
+  repository: ggalva/otel-flask-app
   tag: latest
   pullPolicy: IfNotPresent
 
