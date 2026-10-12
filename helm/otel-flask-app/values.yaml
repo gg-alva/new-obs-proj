@@ -1,0 +1,89 @@
+replicaCount: 2
+
+image:
+  repository: REPLACE_ME/otel-flask-app
+  tag: latest
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}
+
+podAnnotations: {}
+podLabels: {}
+
+service:
+  type: ClusterIP
+  port: 80
+
+containerPort: 5000
+
+app:
+  environment: development
+  # The Service DNS name for the Collector created by this chart.
+  otlpEndpoint: ""
+  extraEnv: []
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 256Mi
+
+autoscaling:
+  enabled: false
+  minReplicas: 2
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 80
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 10001
+  runAsGroup: 10001
+  fsGroup: 10001
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop: ["ALL"]
+
+collector:
+  enabled: true
+  image:
+    repository: otel/opentelemetry-collector-contrib
+    tag: 0.114.0
+    pullPolicy: IfNotPresent
+  service:
+    port: 4318
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 256Mi
+  dynatrace:
+    # Set true only after External Secrets has created this Secret from Key Vault.
+    enabled: false
+    # Example: https://abc12345.live.dynatrace.com/api/v2/otlp
+    otlpEndpoint: ""
+    secretName: dynatrace-otel
+    tokenKey: api-token
+
+externalSecrets:
+  # Requires External Secrets Operator. See docs/AKS-ARGOCD-DYNATRACE.md.
+  enabled: false
+  secretStoreRef:
+    name: azure-keyvault
+    kind: ClusterSecretStore
+  keyVaultSecretName: dynatrace-otel-token
+  targetSecretName: dynatrace-otel
+  targetSecretKey: api-token

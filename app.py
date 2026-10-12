@@ -124,6 +124,18 @@ def render_home():
 def record_request(endpoint_name, started_at):
     latency_histogram.record(time.time() - started_at, {"endpoint": endpoint_name})
 
+
+@app.route("/healthz")
+def healthz():
+    """Liveness check: the process is able to serve HTTP requests."""
+    return {"status": "ok"}, 200
+
+
+@app.route("/readyz")
+def readyz():
+    """Readiness check: this stateless application is ready immediately."""
+    return {"status": "ready"}, 200
+
 @app.route("/")
 def home():
     started_at = time.time()

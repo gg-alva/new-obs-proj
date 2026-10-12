@@ -1,0 +1,27 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: otel-flask-dev
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: otel-demo
+  source:
+    repoURL: https://github.com/REPLACE_WITH_OWNER/REPLACE_WITH_REPOSITORY.git
+    targetRevision: main
+    path: helm/otel-flask-app
+    helm:
+      releaseName: otel-flask
+      valueFiles:
+        - ../../gitops/environments/dev/myapp-values.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: otel-demo-dev
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true

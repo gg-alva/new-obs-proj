@@ -1,0 +1,15 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: otel-demo
+  namespace: argocd
+spec:
+  description: Flask OpenTelemetry demo workloads
+  sourceRepos:
+    - https://github.com/REPLACE_WITH_OWNER/REPLACE_WITH_REPOSITORY.git
+  destinations:
+    - namespace: otel-demo-dev
+      server: https://kubernetes.default.svc
+  clusterResourceWhitelist:
+    - group: ""
+      kind: Namespace

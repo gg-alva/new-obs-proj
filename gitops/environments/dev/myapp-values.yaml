@@ -1,0 +1,24 @@
+# This file is the deployment source of truth. The release workflow updates only image.tag.
+image:
+  repository: REPLACE_WITH_DOCKERHUB_USERNAME/otel-flask-app
+  tag: "1.0.0"
+
+app:
+  environment: development
+
+collector:
+  dynatrace:
+    enabled: true
+    # Replace with your Dynatrace environment OTLP ingest endpoint.
+    otlpEndpoint: "https://REPLACE_ME.live.dynatrace.com/api/v2/otlp"
+    secretName: dynatrace-otel
+    tokenKey: api-token
+
+externalSecrets:
+  enabled: true
+  secretStoreRef:
+    name: azure-keyvault
+    kind: ClusterSecretStore
+  keyVaultSecretName: dynatrace-otel-token
+  targetSecretName: dynatrace-otel
+  targetSecretKey: api-token

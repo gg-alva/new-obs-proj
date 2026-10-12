@@ -1,5 +1,16 @@
 # Flask OpenTelemetry + Prometheus + Grafana
 
+## Kubernetes, GitOps, Azure Key Vault, and Dynatrace
+
+The production-style deployment assets are included in this repository:
+
+- `helm/otel-flask-app`: Helm chart for the application and in-cluster OTLP Collector.
+- `gitops/`: Argo CD project/application, development desired-state values, and Azure Key Vault External Secrets store.
+- `.github/workflows/`: pull-request validation and immutable-image publishing/GitOps promotion.
+- `docs/AKS-ARGOCD-DYNATRACE.md`: complete manual AKS OIDC workload identity, Key Vault, External Secrets, Argo CD, and Dynatrace setup.
+
+Start with the [full deployment guide](docs/AKS-ARGOCD-DYNATRACE.md). No Azure credentials or Dynatrace tokens are committed to this repository.
+
 ## Local start
 
 1. Copy `.env.example` to `.env` and change `GRAFANA_ADMIN_PASSWORD`.

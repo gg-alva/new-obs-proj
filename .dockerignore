@@ -1,0 +1,14 @@
+.git
+.github
+.env
+.venv
+__pycache__/
+*.py[cod]
+README.md
+docker-compose.yml
+grafana/
+prometheus.yml
+otel-collector-config.yaml
+helm/
+gitops/
+docs/

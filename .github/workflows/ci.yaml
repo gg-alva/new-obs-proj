@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+    paths-ignore:
+      - "gitops/**"
+      - "docs/**"
+      - "README.md"
+
+permissions:
+  contents: read
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Check Python syntax
+        run: python -m py_compile app.py
+      - name: Render Helm chart
+        run: helm template otel-flask ./helm/otel-flask-app --set image.repository=example/otel-flask-app --set image.tag=test >/dev/null
+      - uses: docker/setup-buildx-action@v3
+      - name: Build container
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          tags: otel-flask-app:ci

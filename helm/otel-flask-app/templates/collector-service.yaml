@@ -1,0 +1,19 @@
+{{- if .Values.collector.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "otel-flask-app.fullname" . }}-collector
+  labels:
+    {{- include "otel-flask-app.labels" . | nindent 4 }}
+    app.kubernetes.io/component: otel-collector
+spec:
+  type: ClusterIP
+  selector:
+    {{- include "otel-flask-app.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: otel-collector
+  ports:
+    - name: otlp-http
+      port: {{ .Values.collector.service.port }}
+      targetPort: otlp-http
+      protocol: TCP
+{{- end }}

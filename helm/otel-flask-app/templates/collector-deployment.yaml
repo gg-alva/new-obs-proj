@@ -1,0 +1,58 @@
+{{- if .Values.collector.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "otel-flask-app.fullname" . }}-collector
+  labels:
+    {{- include "otel-flask-app.labels" . | nindent 4 }}
+    app.kubernetes.io/component: otel-collector
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      {{- include "otel-flask-app.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: otel-collector
+  template:
+    metadata:
+      labels:
+        {{- include "otel-flask-app.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: otel-collector
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+      containers:
+        - name: otel-collector
+          image: "{{ .Values.collector.image.repository }}:{{ .Values.collector.image.tag }}"
+          imagePullPolicy: {{ .Values.collector.image.pullPolicy }}
+          args: ["--config=/conf/config.yaml"]
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          ports:
+            - name: otlp-http
+              containerPort: {{ .Values.collector.service.port }}
+          {{- if .Values.collector.dynatrace.enabled }}
+          env:
+            - name: DYNATRACE_OTLP_ENDPOINT
+              value: {{ required "collector.dynatrace.otlpEndpoint is required when Dynatrace is enabled" .Values.collector.dynatrace.otlpEndpoint | quote }}
+            - name: DYNATRACE_API_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.collector.dynatrace.secretName }}
+                  key: {{ .Values.collector.dynatrace.tokenKey }}
+          {{- end }}
+          volumeMounts:
+            - name: config
+              mountPath: /conf
+              readOnly: true
+          resources:
+            {{- toYaml .Values.collector.resources | nindent 12 }}
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "otel-flask-app.fullname" . }}-collector
+{{- end }}
