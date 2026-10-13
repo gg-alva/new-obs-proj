@@ -22,7 +22,7 @@ data:
       otlphttp/dynatrace:
         endpoint: ${env:DYNATRACE_OTLP_ENDPOINT}
         headers:
-          Authorization: "Api-Token ${env:DYNATRACE_API_TOKEN}"
+          Authorization: "Bearer ${env:DYNATRACE_API_TOKEN}"
       {{- else }}
       debug:
         verbosity: basic
