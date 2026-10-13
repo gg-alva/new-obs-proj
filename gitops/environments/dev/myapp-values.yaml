@@ -4,7 +4,23 @@ image:
   tag: "622e96089cfcb04b5c016a78ed37d3f5acf018bb"
 
 service:
-  type: LoadBalancer
+  type: ClusterIP
+
+ingress:
+  enabled: true
+  className: kong
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    konghq.com/https-redirect-status-code: "301"
+  hosts:
+    - host: app.putturu.in
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: app-putturu-in-tls
+      hosts:
+        - app.putturu.in
 
 app:
   environment: development
