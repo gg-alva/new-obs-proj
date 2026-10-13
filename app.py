@@ -31,6 +31,7 @@ resource = Resource.create({
     "vcs.repository.name": os.environ.get("GITHUB_REPOSITORY", ""),
 })
 
+
 trace_provider = TracerProvider(resource=resource)
 trace_provider.add_span_processor(
     BatchSpanProcessor(
