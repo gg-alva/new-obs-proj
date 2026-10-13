@@ -21,6 +21,18 @@ service:
   type: ClusterIP
   port: 80
 
+# Enable only after Kong, DNS, and cert-manager are configured.
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts:
+    - host: chart-example.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+
 containerPort: 5000
 
 app:

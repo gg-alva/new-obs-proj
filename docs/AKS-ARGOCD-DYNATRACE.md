@@ -178,6 +178,33 @@ In Dynatrace, use Distributed traces and Metrics to find `service.name = myapp`;
 - **ImagePullBackOff:** check Docker Hub image visibility and `image.repository`; configure a pull secret for private images.
 - **Rollback:** revert the Git commit that changed `image.tag`. Argo CD reconciles the previous SHA; do not deploy ad hoc mutable tags.
 
+## Publishing the application through Kong
+
+After Kong Ingress Controller and cert-manager are installed, create a DNS A record for `app.putturu.in` that points to the external IP of the `kong-gateway-proxy` Service (not the application's Service). Add the following to the environment values file and commit it. Do this only after DNS resolves to Kong, otherwise changing the Service to `ClusterIP` removes the direct public load balancer route.
+
+```yaml
+service:
+  type: ClusterIP
+
+ingress:
+  enabled: true
+  className: kong
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    konghq.com/https-redirect-status-code: "301"
+  hosts:
+    - host: app.putturu.in
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: app-putturu-in-tls
+      hosts:
+        - app.putturu.in
+```
+
+Argo CD creates the Ingress as part of the Helm release. Confirm the certificate is Ready with `kubectl -n otel-demo-dev get ingress,certificate`, then access `https://app.putturu.in`.
+
 ## Production hardening checklist
 
 - Create a separate namespace, values file, Dynatrace token, Key Vault secret, and Argo CD Application per environment.
