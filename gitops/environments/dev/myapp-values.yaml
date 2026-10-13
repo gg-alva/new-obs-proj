@@ -1,7 +1,7 @@
 # This file is the deployment source of truth. The release workflow updates only image.tag.
 image:
   repository: ggalva/otel-flask-app
-  tag: "f24b0a7c8b9dcbe75556bea8fb7918635b928722"
+  tag: "b6e01442d8ceda358e9a5ed028ea33492d47a48e"
 
 app:
   environment: development
