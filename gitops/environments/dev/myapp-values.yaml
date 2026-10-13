@@ -1,7 +1,7 @@
 # This file is the deployment source of truth. The release workflow updates only image.tag.
 image:
   repository: ggalva/otel-flask-app
-  tag: "622e96089cfcb04b5c016a78ed37d3f5acf018bb"
+  tag: "9d151995e24aee2771d1fb850df593cbb68ffaf6"
 
 service:
   type: ClusterIP
