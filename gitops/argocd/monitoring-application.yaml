@@ -1,0 +1,47 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: monitoring
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://prometheus-community.github.io/helm-charts
+    chart: kube-prometheus-stack
+    targetRevision: CHART_VERSION
+    helm:
+      releaseName: monitoring
+      values: |
+        grafana:
+          service:
+            type: ClusterIP
+          persistence:
+            enabled: true
+            size: 10Gi
+          ingress:
+            enabled: true
+            ingressClassName: kong
+            annotations:
+              cert-manager.io/cluster-issuer: letsencrypt-prod
+              konghq.com/https-redirect-status-code: "301"
+            hosts:
+              - grafana.putturu.in
+            tls:
+              - secretName: grafana-putturu-in-tls
+                hosts:
+                  - grafana.putturu.in
+        prometheus:
+          service:
+            type: ClusterIP
+          ingress:
+            enabled: false
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
