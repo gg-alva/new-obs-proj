@@ -3,6 +3,9 @@ image:
   repository: ggalva/otel-flask-app
   tag: "b6e01442d8ceda358e9a5ed028ea33492d47a48e"
 
+service:
+  type: LoadBalancer
+
 app:
   environment: development
 
