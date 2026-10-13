@@ -72,7 +72,7 @@ collector:
       memory: 256Mi
   dynatrace:
     # Set true only after External Secrets has created this Secret from Key Vault.
-    enabled: false
+    enabled: true
     # Example: https://abc12345.live.dynatrace.com/api/v2/otlp
     otlpEndpoint: ""
     secretName: dynatrace-otel
@@ -80,7 +80,7 @@ collector:
 
 externalSecrets:
   # Requires External Secrets Operator. See docs/AKS-ARGOCD-DYNATRACE.md.
-  enabled: false
+  enabled: true
   secretStoreRef:
     name: azure-keyvault
     kind: ClusterSecretStore
