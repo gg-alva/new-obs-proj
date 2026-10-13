@@ -74,7 +74,7 @@ collector:
     # Set true only after External Secrets has created this Secret from Key Vault.
     enabled: true
     # Example: https://abc12345.live.dynatrace.com/api/v2/otlp
-    otlpEndpoint: ""
+    otlpEndpoint: "https://fwe60734.live.dynatrace.com/api/v2/otlp"
     secretName: dynatrace-otel
     tokenKey: api-token
 
