@@ -16,4 +16,10 @@ spec:
       port: {{ .Values.collector.service.port }}
       targetPort: otlp-http
       protocol: TCP
+    {{- if .Values.collector.prometheus.enabled }}
+    - name: metrics
+      port: {{ .Values.collector.prometheus.port }}
+      targetPort: metrics
+      protocol: TCP
+    {{- end }}
 {{- end }}

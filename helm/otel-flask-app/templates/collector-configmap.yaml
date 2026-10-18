@@ -18,12 +18,19 @@ data:
         limit_mib: 192
       batch: {}
     exporters:
+      {{- if .Values.collector.prometheus.enabled }}
+      prometheus:
+        endpoint: 0.0.0.0:{{ .Values.collector.prometheus.port }}
+        resource_to_telemetry_conversion:
+          enabled: true
+      {{- end }}
       {{- if .Values.collector.dynatrace.enabled }}
       otlphttp/dynatrace:
         endpoint: ${env:DYNATRACE_OTLP_ENDPOINT}
         headers:
           Authorization: "Bearer ${env:DYNATRACE_API_TOKEN}"
-      {{- else }}
+      {{- end }}
+      {{- if and (not .Values.collector.prometheus.enabled) (not .Values.collector.dynatrace.enabled) }}
       debug:
         verbosity: basic
       {{- end }}
@@ -39,5 +46,5 @@ data:
         metrics:
           receivers: [otlp]
           processors: [memory_limiter, batch]
-          exporters: [{{ if .Values.collector.dynatrace.enabled }}otlphttp/dynatrace{{ else }}debug{{ end }}]
+          exporters: [{{- if .Values.collector.prometheus.enabled }}prometheus{{- end }}{{- if and .Values.collector.prometheus.enabled .Values.collector.dynatrace.enabled }}, {{- end }}{{- if .Values.collector.dynatrace.enabled }}otlphttp/dynatrace{{- end }}{{- if and (not .Values.collector.prometheus.enabled) (not .Values.collector.dynatrace.enabled) }}debug{{- end }}]
 {{- end }}

@@ -51,3 +51,9 @@ Pull request builds validate the Docker image but do not push it.
 - The Collector exports metrics for Prometheus on port 8889 and writes traces to its debug logs.
 - This stack visualizes metrics in Prometheus/Grafana. It does not store or display traces in a trace UI.
 - Application logs are available with `docker compose logs -f app`; they are not currently exported as OpenTelemetry logs.
+
+## AKS metrics path
+
+The Helm chart exports the application's OpenTelemetry **metrics** from the in-cluster Collector on port `8889`. Its `ServiceMonitor` lets the Prometheus instance installed by `kube-prometheus-stack` scrape that endpoint. The development GitOps values enable this and add the `release: monitoring` label required by that Prometheus release.
+
+The collector sends the same metrics and all traces to Dynatrace when enabled. Grafana can query the Prometheus metrics, but Prometheus/Grafana is not a trace store; view the application's traces in Dynatrace (or add a trace backend such as Tempo).

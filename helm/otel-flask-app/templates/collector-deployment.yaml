@@ -14,6 +14,8 @@ spec:
       app.kubernetes.io/component: otel-collector
   template:
     metadata:
+      annotations:
+        checksum/collector-config: {{ include (print $.Template.BasePath "/collector-configmap.yaml") . | sha256sum }}
       labels:
         {{- include "otel-flask-app.selectorLabels" . | nindent 8 }}
         app.kubernetes.io/component: otel-collector
@@ -35,6 +37,10 @@ spec:
           ports:
             - name: otlp-http
               containerPort: {{ .Values.collector.service.port }}
+          {{- if .Values.collector.prometheus.enabled }}
+            - name: metrics
+              containerPort: {{ .Values.collector.prometheus.port }}
+          {{- end }}
           {{- if .Values.collector.dynatrace.enabled }}
           env:
             - name: DYNATRACE_OTLP_ENDPOINT

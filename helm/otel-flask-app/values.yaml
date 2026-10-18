@@ -75,6 +75,17 @@ collector:
     pullPolicy: IfNotPresent
   service:
     port: 4318
+  prometheus:
+    # Exposes app OpenTelemetry metrics for Prometheus scraping. Prometheus cannot store traces.
+    enabled: true
+    port: 8889
+    serviceMonitor:
+      # Enable in each environment after kube-prometheus-stack is installed.
+      enabled: false
+      interval: 30s
+      scrapeTimeout: 10s
+      # kube-prometheus-stack normally selects ServiceMonitors by its Helm release label.
+      labels: {}
   resources:
     requests:
       cpu: 100m

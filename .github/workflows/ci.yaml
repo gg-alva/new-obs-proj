@@ -25,7 +25,9 @@ jobs:
       - name: Check Python syntax
         run: python -m py_compile app.py
       - name: Render Helm chart
-        run: helm template otel-flask ./helm/otel-flask-app --set image.repository=example/otel-flask-app --set image.tag=test >/dev/null
+        run: |
+          helm template otel-flask ./helm/otel-flask-app --set image.repository=example/otel-flask-app --set image.tag=test >/dev/null
+          helm template otel-flask ./helm/otel-flask-app --namespace otel-demo-dev --values gitops/environments/dev/myapp-values.yaml >/dev/null
       - uses: docker/setup-buildx-action@v3
       - name: Build container
         uses: docker/build-push-action@v6

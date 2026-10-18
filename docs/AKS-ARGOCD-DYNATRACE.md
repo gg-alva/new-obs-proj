@@ -8,6 +8,7 @@ This guide deploys the Flask application to AKS with Helm and makes Git the desi
 Git push → GitHub Actions builds immutable image → commits image SHA to GitOps values
                                                        ↓
 Argo CD watches main → Helm release in AKS → Flask → OTLP/HTTP → Collector → Dynatrace
+                                                               └→ Prometheus → Grafana
                                                    ↑                         
 Key Vault → External Secrets Operator (Azure workload identity) → Kubernetes Secret
 ```
@@ -70,14 +71,14 @@ az role assignment create \
 
 Role-assignment propagation can take several minutes. Do not grant Key Vault Contributor or Owner just to make ESO work.
 
-## 4. Create a least-privilege Dynatrace API token and store it
+## 4. Create a least-privilege Dynatrace platform token and store it
 
-In Dynatrace, create an API token with these scopes:
+This chart uses `Authorization: Bearer`, so create a **platform token** with these scopes:
 
-- `openTelemetryTrace.ingest`
-- `metrics.ingest`
+- `openpipeline:traces:ingest`
+- `openpipeline:metrics:ingest`
 
-Add `logs.ingest` only if you later add an OTLP logs pipeline. Copy the value once, then place it in Key Vault. Secret names cannot contain underscores, so this guide uses `dynatrace-otel-token`.
+Add `openpipeline:logs:ingest` only if you later add an OTLP logs pipeline. Copy the value once, then place it in Key Vault. Secret names cannot contain underscores, so this guide uses `dynatrace-otel-token`. A Classic Dynatrace access token requires the `Api-Token` authorization scheme instead, so do not put one in this chart without changing the Collector configuration.
 
 ```bash
 az keyvault secret set \
@@ -167,14 +168,30 @@ Open `http://localhost:8080/`, `http://localhost:8080/slow`, and `http://localho
 kubectl -n "$APP_NAMESPACE" logs deploy/otel-flask-otel-flask-app-collector --tail=100
 ```
 
-In Dynatrace, use Distributed traces and Metrics to find `service.name = myapp`; filter by `deployment.environment.name = development`. The app emits `app_requests`, `app_errors`, and `app_request_latency_seconds` (Dynatrace may normalize metric names). If traces appear but metrics do not, re-check that `metrics.ingest` is on the API token.
+In Dynatrace, use Distributed traces and Metrics to find `service.name = myapp`; filter by `deployment.environment.name = development`. The app emits `app_requests`, `app_errors`, and `app_request_latency_seconds` (Dynatrace may normalize metric names). If traces appear but metrics do not, re-check that the token has metric-ingest permission.
+
+## Prometheus and Grafana application metrics
+
+The development values enable the Collector's Prometheus exporter and create a `ServiceMonitor` labelled `release: monitoring`. That label matches the `monitoring` Helm release in `gitops/argocd/monitoring-application.yaml`. Keep the label aligned if you change that release name.
+
+After Argo CD synchronizes both applications, generate traffic through `https://app.putturu.in/`, then verify the scrape target and metric series:
+
+```bash
+kubectl -n otel-demo-dev get servicemonitor
+kubectl -n otel-demo-dev get svc otel-flask-otel-flask-app-collector
+kubectl -n monitoring port-forward svc/monitoring-kube-prometheus-prometheus 9090:9090
+```
+
+Open `http://localhost:9090/targets`; the `otel-flask-otel-flask-app-collector` target must be **UP**. Then use queries such as `app_requests_total`, `app_errors_total`, or search for `app_` because the Prometheus exporter may normalize names.
+
+Grafana reads these metrics from Prometheus. It does not receive or render traces from Prometheus; use Dynatrace for traces unless you intentionally add a trace backend such as Grafana Tempo.
 
 ## Operations and troubleshooting
 
 - **ExternalSecret is not Ready:** inspect `kubectl -n otel-demo-dev describe externalsecret otel-flask-otel-flask-app-dynatrace`, then ESO controller logs. Most causes are the Key Vault role assignment still propagating, an incorrect vault URL, or federation subject mismatch.
 - **Azure token exchange fails:** confirm the ESO pod has the `azure.workload.identity/use: "true"` label and the service account has `azure.workload.identity/client-id: <AZURE_CLIENT_ID>`. Compare the federation issuer and subject with the cluster values exactly.
 - **Collector CrashLoopBackOff:** make sure the generated secret name/key (`dynatrace-otel` / `api-token`) matches the values file and the Dynatrace endpoint is populated.
-- **Dynatrace 401/403:** use a fresh API token with the listed scopes, verify it is stored as the Key Vault secret value (not a secret identifier), and check the endpoint has no `/v1/traces` suffix.
+- **Dynatrace 401/403:** use a fresh platform token with the listed scopes, verify it is stored as the Key Vault secret value (not a secret identifier), and check the endpoint has no `/v1/traces` suffix. The chart deliberately uses `Bearer`; do not use a Classic access token unless you change that authorization scheme to `Api-Token`.
 - **ImagePullBackOff:** check Docker Hub image visibility and `image.repository`; configure a pull secret for private images.
 - **Rollback:** revert the Git commit that changed `image.tag`. Argo CD reconciles the previous SHA; do not deploy ad hoc mutable tags.
 
